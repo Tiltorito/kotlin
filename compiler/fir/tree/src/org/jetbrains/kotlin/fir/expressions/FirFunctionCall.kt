@@ -16,7 +16,9 @@ interface FirFunctionCall : @VisitedSupertype FirCall, FirMemberAccess {
         visitor.visitFunctionCall(this, data)
 
     override fun <R, D> acceptChildren(visitor: FirVisitor<R, D>, data: D) {
-        super<FirCall>.acceptChildren(visitor, data)
+        for (argument in arguments) {
+            argument.accept(visitor, data)
+        }
         super<FirMemberAccess>.acceptChildren(visitor, data)
     }
 }

@@ -16,5 +16,6 @@ interface FirReturnStatement : FirJump<FirFunction> {
 
     override fun <R, D> acceptChildren(visitor: FirVisitor<R, D>, data: D) {
         result.accept(visitor, data)
+        super.acceptChildren(visitor, data)
     }
 }

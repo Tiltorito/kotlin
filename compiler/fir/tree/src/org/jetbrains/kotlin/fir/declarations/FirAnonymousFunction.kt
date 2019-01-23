@@ -25,5 +25,6 @@ interface FirAnonymousFunction : @VisitedSupertype FirFunction, FirExpression, F
             parameter.accept(visitor, data)
         }
         body?.accept(visitor, data)
+        // Don't call super<FirExpression>.acceptChildren (annotations are already processed)
     }
 }
