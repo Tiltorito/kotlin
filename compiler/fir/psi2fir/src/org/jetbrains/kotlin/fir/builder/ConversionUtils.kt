@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.ir.expressions.IrConstKind
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.resolve.constants.evaluate.*
 import org.jetbrains.kotlin.types.expressions.OperatorConventions
 
 internal fun String.parseCharacter(): Char? {
@@ -94,24 +95,32 @@ internal fun translateEscape(c: Char): Char? =
 internal fun generateConstantExpressionByLiteral(session: FirSession, expression: KtConstantExpression): FirExpression {
     val type = expression.node.elementType
     val text: String = expression.text
+    val convertedText: Any? = when (type) {
+        KtNodeTypes.INTEGER_CONSTANT, KtNodeTypes.FLOAT_CONSTANT -> parseNumericLiteral(text, type)
+        KtNodeTypes.BOOLEAN_CONSTANT -> parseBoolean(text)
+        else -> null
+    }
     return when (type) {
         KtNodeTypes.INTEGER_CONSTANT ->
-            if (text.last() == 'l' || text.last() == 'L') {
+            if (convertedText is Long &&
+                (hasLongSuffix(text) || hasUnsignedLongSuffix(text) || hasUnsignedSuffix(text) ||
+                        convertedText > Int.MAX_VALUE || convertedText < Int.MIN_VALUE)
+            ) {
                 FirConstExpressionImpl(
-                    session, expression, IrConstKind.Long, text.dropLast(1).toLongOrNull(), "Incorrect long: $text"
+                    session, expression, IrConstKind.Long, convertedText, "Incorrect long: $text"
                 )
             } else {
                 // TODO: support byte / short
-                FirConstExpressionImpl(session, expression, IrConstKind.Int, text.toIntOrNull(), "Incorrect int: $text")
+                FirConstExpressionImpl(session, expression, IrConstKind.Int, (convertedText as Number).toInt(), "Incorrect int: $text")
             }
         KtNodeTypes.FLOAT_CONSTANT ->
-            if (text.last() == 'f' || text.last() == 'F') {
+            if (convertedText is Float) {
                 FirConstExpressionImpl(
-                    session, expression, IrConstKind.Float, text.dropLast(1).toFloatOrNull(), "Incorrect float: $text"
+                    session, expression, IrConstKind.Float, convertedText, "Incorrect float: $text"
                 )
             } else {
                 FirConstExpressionImpl(
-                    session, expression, IrConstKind.Double, text.toDoubleOrNull(), "Incorrect double: $text"
+                    session, expression, IrConstKind.Double, convertedText as Double, "Incorrect double: $text"
                 )
             }
         KtNodeTypes.CHARACTER_CONSTANT ->
@@ -119,7 +128,7 @@ internal fun generateConstantExpressionByLiteral(session: FirSession, expression
                 session, expression, IrConstKind.Char, text.parseCharacter(), "Incorrect character: $text"
             )
         KtNodeTypes.BOOLEAN_CONSTANT ->
-            FirConstExpressionImpl(session, expression, IrConstKind.Boolean, text.toBoolean())
+            FirConstExpressionImpl(session, expression, IrConstKind.Boolean, convertedText as Boolean)
         KtNodeTypes.NULL ->
             FirConstExpressionImpl(session, expression, IrConstKind.Null, null)
         else ->
