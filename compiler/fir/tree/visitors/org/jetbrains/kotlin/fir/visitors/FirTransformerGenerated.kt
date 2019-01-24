@@ -200,6 +200,10 @@ abstract class FirTransformer<in D> : FirVisitor<CompositeTransformResult<FirEle
         return transformCall(functionCall, data)
     }
 
+    open fun transformGetClassCall(getClassCall: FirGetClassCall, data: D): CompositeTransformResult<FirStatement> {
+        return transformCall(getClassCall, data)
+    }
+
     open fun transformOperatorCall(operatorCall: FirOperatorCall, data: D): CompositeTransformResult<FirStatement> {
         return transformCall(operatorCall, data)
     }
@@ -466,6 +470,10 @@ abstract class FirTransformer<in D> : FirVisitor<CompositeTransformResult<FirEle
 
     final override fun visitFunctionType(functionType: FirFunctionType, data: D): CompositeTransformResult<FirElement> {
         return transformFunctionType(functionType, data)
+    }
+
+    final override fun visitGetClassCall(getClassCall: FirGetClassCall, data: D): CompositeTransformResult<FirElement> {
+        return transformGetClassCall(getClassCall, data)
     }
 
     final override fun visitImplicitType(implicitType: FirImplicitType, data: D): CompositeTransformResult<FirElement> {

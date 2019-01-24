@@ -200,6 +200,10 @@ abstract class FirVisitorVoid : FirVisitor<Unit, Nothing?>() {
         visitCall(functionCall, null)
     }
 
+    open fun visitGetClassCall(getClassCall: FirGetClassCall) {
+        visitCall(getClassCall, null)
+    }
+
     open fun visitOperatorCall(operatorCall: FirOperatorCall) {
         visitCall(operatorCall, null)
     }
@@ -466,6 +470,10 @@ abstract class FirVisitorVoid : FirVisitor<Unit, Nothing?>() {
 
     final override fun visitFunctionType(functionType: FirFunctionType, data: Nothing?) {
         visitFunctionType(functionType)
+    }
+
+    final override fun visitGetClassCall(getClassCall: FirGetClassCall, data: Nothing?) {
+        visitGetClassCall(getClassCall)
     }
 
     final override fun visitImplicitType(implicitType: FirImplicitType, data: Nothing?) {

@@ -1259,6 +1259,12 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
             return generateDestructuringBlock(session, multiDeclaration, baseVariable) { toFirOrImplicitType() }
         }
 
+        override fun visitClassLiteralExpression(expression: KtClassLiteralExpression, data: Unit): FirElement {
+            return FirGetClassCallImpl(session, expression).apply {
+                arguments += expression.receiverExpression.toFirExpression("No receiver in class literal")
+            }
+        }
+
         override fun visitExpression(expression: KtExpression, data: Unit): FirElement {
             return FirExpressionStub(session, expression)
         }

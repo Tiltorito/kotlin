@@ -200,6 +200,10 @@ abstract class FirVisitor<out R, in D> {
         return visitCall(functionCall, data)
     }
 
+    open fun visitGetClassCall(getClassCall: FirGetClassCall, data: D): R {
+        return visitCall(getClassCall, data)
+    }
+
     open fun visitOperatorCall(operatorCall: FirOperatorCall, data: D): R {
         return visitCall(operatorCall, data)
     }
