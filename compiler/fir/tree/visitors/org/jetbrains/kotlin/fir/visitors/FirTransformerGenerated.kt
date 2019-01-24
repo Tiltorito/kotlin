@@ -240,6 +240,10 @@ abstract class FirTransformer<in D> : FirVisitor<CompositeTransformResult<FirEle
         return transformExpression(memberAccess, data)
     }
 
+    open fun transformCallableReferenceAccess(callableReferenceAccess: FirCallableReferenceAccess, data: D): CompositeTransformResult<FirStatement> {
+        return transformMemberAccess(callableReferenceAccess, data)
+    }
+
     open fun transformModifiableMemberAccess(modifiableMemberAccess: FirModifiableMemberAccess, data: D): CompositeTransformResult<FirStatement> {
         return transformMemberAccess(modifiableMemberAccess, data)
     }
@@ -382,6 +386,10 @@ abstract class FirTransformer<in D> : FirVisitor<CompositeTransformResult<FirEle
 
     final override fun visitCallableMember(callableMember: FirCallableMember, data: D): CompositeTransformResult<FirElement> {
         return transformCallableMember(callableMember, data)
+    }
+
+    final override fun visitCallableReferenceAccess(callableReferenceAccess: FirCallableReferenceAccess, data: D): CompositeTransformResult<FirElement> {
+        return transformCallableReferenceAccess(callableReferenceAccess, data)
     }
 
     final override fun visitCatch(catch: FirCatch, data: D): CompositeTransformResult<FirElement> {

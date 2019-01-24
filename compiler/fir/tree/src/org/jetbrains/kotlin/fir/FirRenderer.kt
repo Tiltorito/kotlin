@@ -720,6 +720,13 @@ class FirRenderer(builder: StringBuilder) : FirVisitorVoid() {
         }
     }
 
+    override fun visitCallableReferenceAccess(callableReferenceAccess: FirCallableReferenceAccess) {
+        callableReferenceAccess.annotations.renderAnnotations()
+        callableReferenceAccess.explicitReceiver?.accept(this)
+        print("::")
+        callableReferenceAccess.calleeReference.accept(this)
+    }
+
     override fun visitPropertyGet(propertyGet: FirPropertyGet) {
         propertyGet.annotations.renderAnnotations()
         visitMemberAccess(propertyGet)

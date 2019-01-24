@@ -240,6 +240,10 @@ abstract class FirVisitor<out R, in D> {
         return visitExpression(memberAccess, data)
     }
 
+    open fun visitCallableReferenceAccess(callableReferenceAccess: FirCallableReferenceAccess, data: D): R {
+        return visitMemberAccess(callableReferenceAccess, data)
+    }
+
     open fun visitModifiableMemberAccess(modifiableMemberAccess: FirModifiableMemberAccess, data: D): R {
         return visitMemberAccess(modifiableMemberAccess, data)
     }

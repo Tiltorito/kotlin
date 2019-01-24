@@ -240,6 +240,10 @@ abstract class FirVisitorVoid : FirVisitor<Unit, Nothing?>() {
         visitExpression(memberAccess, null)
     }
 
+    open fun visitCallableReferenceAccess(callableReferenceAccess: FirCallableReferenceAccess) {
+        visitMemberAccess(callableReferenceAccess, null)
+    }
+
     open fun visitModifiableMemberAccess(modifiableMemberAccess: FirModifiableMemberAccess) {
         visitMemberAccess(modifiableMemberAccess, null)
     }
@@ -382,6 +386,10 @@ abstract class FirVisitorVoid : FirVisitor<Unit, Nothing?>() {
 
     final override fun visitCallableMember(callableMember: FirCallableMember, data: Nothing?) {
         visitCallableMember(callableMember)
+    }
+
+    final override fun visitCallableReferenceAccess(callableReferenceAccess: FirCallableReferenceAccess, data: Nothing?) {
+        visitCallableReferenceAccess(callableReferenceAccess)
     }
 
     final override fun visitCatch(catch: FirCatch, data: Nothing?) {

@@ -1265,6 +1265,13 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
             }
         }
 
+        override fun visitCallableReferenceExpression(expression: KtCallableReferenceExpression, data: Unit): FirElement {
+            return FirCallableReferenceAccessImpl(session, expression).apply {
+                calleeReference = FirSimpleMemberReference(session, expression, expression.callableReference.getReferencedNameAsName())
+                explicitReceiver = expression.receiverExpression?.toFirExpression()
+            }
+        }
+
         override fun visitExpression(expression: KtExpression, data: Unit): FirElement {
             return FirExpressionStub(session, expression)
         }
