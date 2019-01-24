@@ -11,7 +11,10 @@ import org.jetbrains.kotlin.fir.FirRenderer
 import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.fir.expressions.FirErrorExpression
 import org.jetbrains.kotlin.fir.expressions.FirExpression
+import org.jetbrains.kotlin.fir.expressions.FirMemberAccess
 import org.jetbrains.kotlin.fir.expressions.impl.FirExpressionStub
+import org.jetbrains.kotlin.fir.references.FirErrorMemberReference
+import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.fir.visitors.FirVisitorVoid
 import org.jetbrains.kotlin.test.JUnit3RunnerWithInners
 import org.junit.runner.RunWith
@@ -30,6 +33,8 @@ class RawFirBuilderTotalKotlinTestCase : AbstractRawFirBuilderTestCase() {
         var expressionStubs = 0
         var errorExpressions = 0
         var normalExpressions = 0
+        var errorReferences = 0
+        var normalReferences = 0
         println("BASE PATH: $testDataPath")
         for (file in root.walkTopDown()) {
             if (file.isDirectory) continue
@@ -50,6 +55,19 @@ class RawFirBuilderTotalKotlinTestCase : AbstractRawFirBuilderTestCase() {
 
                     override fun visitErrorExpression(errorExpression: FirErrorExpression) {
                         errorExpressions++
+                        println(errorExpression.render())
+                        errorExpression.psi?.let { println(it) }
+                    }
+
+                    override fun visitMemberAccess(memberAccess: FirMemberAccess) {
+                        val calleeReference = memberAccess.calleeReference
+                        if (calleeReference is FirErrorMemberReference) {
+                            errorReferences++
+                            println(calleeReference.errorReason)
+                        } else {
+                            normalReferences++
+                        }
+                        super.visitMemberAccess(memberAccess)
                     }
 
                     override fun visitExpression(expression: FirExpression) {
@@ -80,9 +98,13 @@ class RawFirBuilderTotalKotlinTestCase : AbstractRawFirBuilderTestCase() {
         println("EXPRESSION STUBS: $expressionStubs")
         println("ERROR EXPRESSIONS: $errorExpressions")
         println("NORMAL EXPRESSIONS: $normalExpressions")
+        println("ERROR REFERENCES: $errorReferences")
+        println("NORMAL REFERENCES: $normalReferences")
         if (!stubMode) {
             assertEquals(0, expressionStubs)
         }
+        assertEquals(0, errorExpressions)
+        assertEquals(0, errorReferences)
     }
 
     fun testTotalKotlinWithExpressionTrees() {

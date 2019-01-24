@@ -14,7 +14,7 @@ import org.jetbrains.kotlin.name.Name
 class FirErrorMemberReference(
     session: FirSession,
     psi: PsiElement?,
-    private val errorReason: String
+    val errorReason: String
 ) : FirAbstractElement(session, psi), FirMemberReference {
     override val name: Name = Name.special("<$errorReason>")
 }
