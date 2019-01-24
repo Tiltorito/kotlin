@@ -2,10 +2,10 @@ FILE: typeOperators.kt
     public? final? interface IThing {
     }
     public? final? function test1(x: Any): <implicit> {
-        return@@@test1 !is/IThing(x#)
+        return@@@test1 is/IThing(x#)
     }
     public? final? function test2(x: Any): <implicit> {
-        return@@@test2 is/IThing(x#)
+        return@@@test2 !is/IThing(x#)
     }
     public? final? function test3(x: Any): <implicit> {
         return@@@test3 as/IThing(x#)

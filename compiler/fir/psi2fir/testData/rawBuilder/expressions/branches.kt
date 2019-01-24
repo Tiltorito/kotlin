@@ -27,6 +27,7 @@ fun grade(g: Int): String {
         4 -> "Good"
         3 -> "Mediocre"
         in 1..2 -> "Fail"
+        is Number -> "Number"
         else -> "Unknown"
     }
 }

@@ -930,7 +930,14 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
                         arguments += rangeExpression.toFirExpression("No range in condition with range")
                     }
                 }
-                // TODO: support KtWhenConditionIsPattern
+                is KtWhenConditionIsPattern -> {
+                    FirTypeOperatorCallImpl(
+                        session, typeReference, if (isNegated) FirOperation.NOT_IS else FirOperation.IS,
+                        typeReference.toFirOrErrorType()
+                    ).apply {
+                        arguments += firSubjectExpression
+                    }
+                }
                 else -> {
                     FirErrorExpressionImpl(session, this, "Unsupported when condition: ${this.javaClass}")
                 }
@@ -1144,7 +1151,7 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
 
         override fun visitIsExpression(expression: KtIsExpression, data: Unit): FirElement {
             return FirTypeOperatorCallImpl(
-                session, expression, if (expression.isNegated) FirOperation.IS else FirOperation.NOT_IS,
+                session, expression, if (expression.isNegated) FirOperation.NOT_IS else FirOperation.IS,
                 expression.typeReference.toFirOrErrorType()
             ).apply {
                 arguments += expression.leftHandSide.toFirExpression("No left operand")
