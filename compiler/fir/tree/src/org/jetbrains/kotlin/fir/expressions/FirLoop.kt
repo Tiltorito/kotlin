@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.fir.FirLabeledElement
 import org.jetbrains.kotlin.fir.VisitedSupertype
 import org.jetbrains.kotlin.fir.visitors.FirVisitor
 
-interface FirLoop : @VisitedSupertype FirStatement, FirLabeledElement {
+interface FirLoop : @VisitedSupertype FirStatement, FirLabeledElement, FirAnnotationContainer {
     val condition: FirExpression
 
     val block: FirBlock

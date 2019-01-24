@@ -6,22 +6,10 @@
 package org.jetbrains.kotlin.fir.expressions.impl
 
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.fir.FirAbstractElement
-import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.expressions.FirAnnotationCall
 import org.jetbrains.kotlin.fir.expressions.FirExpression
-import org.jetbrains.kotlin.fir.transformInplace
-import org.jetbrains.kotlin.fir.visitors.FirTransformer
 
 abstract class FirAbstractExpression(
     session: FirSession,
     psi: PsiElement?
-) : FirAbstractElement(session, psi), FirExpression {
-    final override val annotations = mutableListOf<FirAnnotationCall>()
-
-    override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
-        annotations.transformInplace(transformer, data)
-        return this
-    }
-}
+) : FirAbstractAnnotatedElement(session, psi), FirExpression

@@ -265,13 +265,7 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
             return firProperty
         }
 
-        private fun KtModifierListOwner.extractAnnotationsTo(container: FirAbstractAnnotatedDeclaration) {
-            for (annotationEntry in annotationEntries) {
-                container.annotations += annotationEntry.convert<FirAnnotationCall>()
-            }
-        }
-
-        private fun KtAnnotatedExpression.extractAnnotationsTo(container: FirAbstractExpression) {
+        private fun KtAnnotated.extractAnnotationsTo(container: FirAbstractAnnotatedElement) {
             for (annotationEntry in annotationEntries) {
                 container.annotations += annotationEntry.convert<FirAnnotationCall>()
             }
@@ -1273,7 +1267,7 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
 
         override fun visitAnnotatedExpression(expression: KtAnnotatedExpression, data: Unit): FirElement {
             val rawResult = expression.baseExpression?.accept(this, data)
-            val result = rawResult as? FirAbstractExpression
+            val result = rawResult as? FirAbstractAnnotatedElement
                 ?: FirErrorExpressionImpl(session, expression, "Strange annotated expression: ${rawResult?.render()}")
             expression.extractAnnotationsTo(result)
             return result
