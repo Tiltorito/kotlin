@@ -184,6 +184,10 @@ abstract class FirVisitor<out R, in D> {
         return visitCall(arrayGetCall, data)
     }
 
+    open fun visitArrayOfCall(arrayOfCall: FirArrayOfCall, data: D): R {
+        return visitCall(arrayOfCall, data)
+    }
+
     open fun visitArraySetCall(arraySetCall: FirArraySetCall, data: D): R {
         return visitCall(arraySetCall, data)
     }

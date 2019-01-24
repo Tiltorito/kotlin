@@ -184,6 +184,10 @@ abstract class FirVisitorVoid : FirVisitor<Unit, Nothing?>() {
         visitCall(arrayGetCall, null)
     }
 
+    open fun visitArrayOfCall(arrayOfCall: FirArrayOfCall) {
+        visitCall(arrayOfCall, null)
+    }
+
     open fun visitArraySetCall(arraySetCall: FirArraySetCall) {
         visitCall(arraySetCall, null)
     }
@@ -366,6 +370,10 @@ abstract class FirVisitorVoid : FirVisitor<Unit, Nothing?>() {
 
     final override fun visitArrayGetCall(arrayGetCall: FirArrayGetCall, data: Nothing?) {
         visitArrayGetCall(arrayGetCall)
+    }
+
+    final override fun visitArrayOfCall(arrayOfCall: FirArrayOfCall, data: Nothing?) {
+        visitArrayOfCall(arrayOfCall)
     }
 
     final override fun visitArraySetCall(arraySetCall: FirArraySetCall, data: Nothing?) {

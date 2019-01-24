@@ -1272,6 +1272,14 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
             }
         }
 
+        override fun visitCollectionLiteralExpression(expression: KtCollectionLiteralExpression, data: Unit): FirElement {
+            return FirArrayOfCallImpl(session, expression).apply {
+                for (innerExpression in expression.getInnerExpressions()) {
+                    arguments += innerExpression.toFirExpression()
+                }
+            }
+        }
+
         override fun visitExpression(expression: KtExpression, data: Unit): FirElement {
             return FirExpressionStub(session, expression)
         }

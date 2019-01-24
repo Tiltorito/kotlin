@@ -794,6 +794,12 @@ class FirRenderer(builder: StringBuilder) : FirVisitorVoid() {
         visitCall(getClassCall)
     }
 
+    override fun visitArrayOfCall(arrayOfCall: FirArrayOfCall) {
+        arrayOfCall.annotations.renderAnnotations()
+        print("<implicitArrayOf>")
+        visitCall(arrayOfCall)
+    }
+
     override fun visitThrowExpression(throwExpression: FirThrowExpression) {
         throwExpression.annotations.renderAnnotations()
         print("throw ")
