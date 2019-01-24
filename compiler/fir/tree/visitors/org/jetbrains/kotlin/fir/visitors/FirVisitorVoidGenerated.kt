@@ -140,6 +140,10 @@ abstract class FirVisitorVoid : FirVisitor<Unit, Nothing?>() {
         visitReference(memberReference, null)
     }
 
+    open fun visitSuperReference(superReference: FirSuperReference) {
+        visitReference(superReference, null)
+    }
+
     open fun visitThisReference(thisReference: FirThisReference) {
         visitReference(thisReference, null)
     }
@@ -582,6 +586,10 @@ abstract class FirVisitorVoid : FirVisitor<Unit, Nothing?>() {
 
     final override fun visitStatement(statement: FirStatement, data: Nothing?) {
         visitStatement(statement)
+    }
+
+    final override fun visitSuperReference(superReference: FirSuperReference, data: Nothing?) {
+        visitSuperReference(superReference)
     }
 
     final override fun visitTargetElement(targetElement: FirTargetElement, data: Nothing?) {

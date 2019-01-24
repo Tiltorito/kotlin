@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.impl.*
 import org.jetbrains.kotlin.fir.labels.FirLabelImpl
 import org.jetbrains.kotlin.fir.references.FirErrorMemberReference
+import org.jetbrains.kotlin.fir.references.FirExplicitSuperReference
 import org.jetbrains.kotlin.fir.references.FirSimpleMemberReference
 import org.jetbrains.kotlin.fir.references.FirExplicitThisReference
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
@@ -1208,6 +1209,13 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
             val labelName = expression.getLabelName()
             return FirPropertyGetImpl(session, expression).apply {
                 calleeReference = FirExplicitThisReference(session, expression, labelName)
+            }
+        }
+
+        override fun visitSuperExpression(expression: KtSuperExpression, data: Unit): FirElement {
+            val superType = expression.superTypeQualifier
+            return FirPropertyGetImpl(session, expression).apply {
+                calleeReference = FirExplicitSuperReference(session, expression, superType.toFirOrImplicitType())
             }
         }
 
