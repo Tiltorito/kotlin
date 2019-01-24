@@ -843,14 +843,38 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
 
         override fun visitStringTemplateExpression(expression: KtStringTemplateExpression, data: Unit): FirElement {
             val sb = StringBuilder()
-            for (entry in expression.entries) {
-                when (entry) {
-                    is KtLiteralStringTemplateEntry -> sb.append(entry.text)
-                    is KtEscapeStringTemplateEntry -> sb.append(entry.unescapedValue)
-                    else -> return FirErrorExpressionImpl(session, expression, "Incorrect template entry: ${entry.text}")
+            var hasExpressions = false
+            val interpolatingCall = FirFunctionCallImpl(session, expression).apply {
+                calleeReference = FirSimpleMemberReference(session, expression, OperatorNameConventions.PLUS)
+                for (entry in expression.entries) {
+                    when (entry) {
+                        is KtLiteralStringTemplateEntry -> {
+                            sb.append(entry.text)
+                            arguments += FirConstExpressionImpl(session, entry, IrConstKind.String, entry.text)
+                        }
+                        is KtEscapeStringTemplateEntry -> {
+                            sb.append(entry.unescapedValue)
+                            arguments += FirConstExpressionImpl(session, entry, IrConstKind.String, entry.unescapedValue)
+                        }
+                        is KtStringTemplateEntryWithExpression -> {
+                            val innerExpression = entry.expression
+                            if (innerExpression != null) {
+                                arguments += innerExpression.toFirExpression()
+                                hasExpressions = true
+                            }
+                        }
+                        else -> {
+                            arguments += FirErrorExpressionImpl(session, expression, "Incorrect template entry: ${entry.text}")
+                            hasExpressions = true
+                        }
+                    }
                 }
             }
-            return FirConstExpressionImpl(session, expression, IrConstKind.String, sb.toString())
+            return if (hasExpressions) {
+                interpolatingCall
+            } else {
+                FirConstExpressionImpl(session, expression, IrConstKind.String, sb.toString())
+            }
         }
 
         override fun visitReturnExpression(expression: KtReturnExpression, data: Unit): FirElement {
