@@ -28,7 +28,7 @@ FILE: enums.kt
             internal get(): Double
 
         public? final enum entry MERCURY : Planet {
-            public? constructor(): super<Planet>()
+            public? constructor(): super<Planet>(Double(1.0), Double(2.0))
 
             public? open? override function sayHello(): kotlin.Unit {
                 println#(String(Hello!!!))
@@ -37,7 +37,7 @@ FILE: enums.kt
         }
 
         public? final enum entry VENERA : Planet {
-            public? constructor(): super<Planet>()
+            public? constructor(): super<Planet>(Double(3.0), Double(4.0))
 
             public? open? override function sayHello(): kotlin.Unit {
                 println#(String(Ola!!!))
@@ -46,7 +46,7 @@ FILE: enums.kt
         }
 
         public? final enum entry EARTH : Planet {
-            public? constructor(): super<Planet>()
+            public? constructor(): super<Planet>(Double(5.0), Double(6.0))
 
             public? open? override function sayHello(): kotlin.Unit {
                 println#(String(Privet!!!))

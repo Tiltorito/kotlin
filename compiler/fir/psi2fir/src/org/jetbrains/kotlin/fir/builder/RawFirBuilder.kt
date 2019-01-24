@@ -353,8 +353,9 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
                 delegatedSuperType,
                 isThis = false
             ).apply {
-                // TODO: arguments are not needed for light classes, but will be needed later
-                //superTypeCallEntry.extractArgumentsTo(this)
+                if (!stubMode) {
+                    superTypeCallEntry?.extractArgumentsTo(this)
+                }
             }
             val firConstructor = FirPrimaryConstructorImpl(
                 session,
