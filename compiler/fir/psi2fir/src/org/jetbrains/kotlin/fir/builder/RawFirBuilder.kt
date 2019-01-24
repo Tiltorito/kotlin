@@ -316,7 +316,7 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
                         val type = superTypeListEntry.typeReference.toFirOrErrorType()
                         container.superTypes += FirDelegatedTypeImpl(
                             type,
-                            FirExpressionStub(session, superTypeListEntry)
+                            { superTypeListEntry.delegateExpression }.toFirExpression("Should have delegate")
                         )
                     }
                 }
