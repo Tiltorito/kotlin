@@ -1163,10 +1163,10 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
             return if (conventionCallName != null) {
                 if (operationToken in OperatorConventions.INCREMENT_OPERATIONS) {
                     return generateIncrementOrDecrementBlock(
-                        session, expression, argument as? KtSimpleNameExpression,
+                        session, expression, argument,
                         callName = conventionCallName,
                         prefix = expression is KtPrefixExpression
-                    )
+                    ) { toFirExpression() }
                 }
                 FirFunctionCallImpl(
                     session, expression

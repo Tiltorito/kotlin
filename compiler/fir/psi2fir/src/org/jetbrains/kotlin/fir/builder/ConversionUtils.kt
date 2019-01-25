@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.fir.declarations.impl.FirVariableImpl
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.impl.*
 import org.jetbrains.kotlin.fir.references.FirErrorMemberReference
+import org.jetbrains.kotlin.fir.references.FirExplicitThisReference
 import org.jetbrains.kotlin.fir.references.FirSimpleMemberReference
 import org.jetbrains.kotlin.fir.types.FirType
 import org.jetbrains.kotlin.fir.types.impl.FirImplicitTypeImpl
@@ -202,26 +203,53 @@ internal fun FirExpression.generateNotNullOrOther(other: FirExpression, caseId: 
 internal fun generateIncrementOrDecrementBlock(
     session: FirSession,
     baseExpression: KtUnaryExpression,
-    argument: KtSimpleNameExpression?,
+    argument: KtExpression?,
     callName: Name,
-    prefix: Boolean
+    prefix: Boolean,
+    convert: KtExpression.() -> FirExpression
 ): FirExpression {
-    if (argument == null) return FirErrorExpressionImpl(session, argument, "Inc/dec without operand")
+    if (argument == null) {
+        return FirErrorExpressionImpl(session, argument, "Inc/dec without operand")
+    }
     return FirBlockImpl(session, baseExpression).apply {
         val tempName = Name.special("<unary>")
-        val argumentName = argument.getReferencedNameAsName()
-        statements += generateTemporaryVariable(session, baseExpression, tempName, generatePropertyGet(session, argument, argumentName))
-        statements += FirPropertySetImpl(
-            session, baseExpression,
-            FirFunctionCallImpl(session, baseExpression).apply {
-                this.calleeReference = FirSimpleMemberReference(session, baseExpression.operationReference, callName)
-                this.arguments += generatePropertyGet(session, baseExpression, tempName)
-            },
-            FirOperation.ASSIGN
-        ).apply {
-            this.calleeReference = FirSimpleMemberReference(session, argument, argumentName)
+        statements += generateTemporaryVariable(session, baseExpression, tempName, argument.convert())
+        val resultName = Name.special("<unary-result>")
+        val resultInitializer = FirFunctionCallImpl(session, baseExpression).apply {
+            this.calleeReference = FirSimpleMemberReference(session, baseExpression.operationReference, callName)
+            this.arguments += generatePropertyGet(session, baseExpression, tempName)
         }
-        statements += generatePropertyGet(session, baseExpression, if (prefix) argumentName else tempName)
+        val resultVar = generateTemporaryVariable(session, baseExpression, resultName, resultInitializer)
+        val directSet = argument.generateSet(
+            session, baseExpression,
+            if (prefix && argument !is KtSimpleNameExpression)
+                generatePropertyGet(session, baseExpression, resultName)
+            else
+                resultInitializer,
+            FirOperation.ASSIGN, convert
+        )
+
+        fun appendDirectSet() {
+            if (directSet is FirBlock) {
+                statements += directSet.statements
+            } else {
+                statements += directSet
+            }
+        }
+
+        if (prefix) {
+            if (argument !is KtSimpleNameExpression) {
+                statements += resultVar
+                appendDirectSet()
+                statements += generatePropertyGet(session, baseExpression, resultName)
+            } else {
+                appendDirectSet()
+                statements += generatePropertyGet(session, baseExpression, argument.getReferencedNameAsName())
+            }
+        } else {
+            appendDirectSet()
+            statements += generatePropertyGet(session, baseExpression, tempName)
+        }
     }
 }
 
@@ -270,6 +298,9 @@ private fun FirModifiableMemberAccess.initializeLValue(
         is KtSimpleNameExpression -> {
             FirSimpleMemberReference(session, left.getReferencedNameElement(), left.getReferencedNameAsName())
         }
+        is KtThisExpression -> {
+            FirExplicitThisReference(session, left, left.getLabelName())
+        }
         is KtQualifiedExpression -> {
             val firMemberAccess = left.convertQualified()
             if (firMemberAccess != null) {
@@ -280,8 +311,10 @@ private fun FirModifiableMemberAccess.initializeLValue(
                 FirErrorMemberReference(session, left, "Unsupported qualified LValue: ${left.text}")
             }
         }
+        is KtParenthesizedExpression -> {
+            initializeLValue(session, left.expression, convertQualified)
+        }
         else -> {
-            // TODO: etc.
             FirErrorMemberReference(session, left, "Unsupported LValue: ${left?.javaClass}")
         }
     }
@@ -294,6 +327,9 @@ internal fun KtExpression?.generateSet(
     operation: FirOperation,
     convert: KtExpression.() -> FirExpression
 ): FirExpression {
+    if (this is KtParenthesizedExpression) {
+        return expression.generateSet(session, psi, value, operation, convert)
+    }
     if (this is KtArrayAccessExpression) {
         val arrayExpression = this.arrayExpression
         val arraySet = FirArraySetCallImpl(session, psi, value, operation).apply {
@@ -308,12 +344,25 @@ internal fun KtExpression?.generateSet(
         }
         return FirBlockImpl(session, arrayExpression).apply {
             val name = Name.special("<array-set>")
-            val firTemp = generateTemporaryVariable(
+            statements += generateTemporaryVariable(
                 session, arrayExpression, name,
                 arrayExpression?.convert() ?: FirErrorExpressionImpl(session, arrayExpression, "No array expression")
             )
-            statements += firTemp
             statements += arraySet.apply { calleeReference = FirSimpleMemberReference(session, arrayExpression, name) }
+        }
+    }
+    if (operation != FirOperation.ASSIGN &&
+        this !is KtSimpleNameExpression && this !is KtThisExpression && this !is KtQualifiedExpression
+    ) {
+        return FirBlockImpl(session, this).apply {
+            val name = Name.special("<complex-set>")
+            statements += generateTemporaryVariable(
+                session, this@generateSet, name,
+                this@generateSet?.convert() ?: FirErrorExpressionImpl(session, this@generateSet, "No LValue in assignment")
+            )
+            statements += FirPropertySetImpl(session, psi, value, operation).apply {
+                calleeReference = FirSimpleMemberReference(session, this@generateSet, name)
+            }
         }
     }
     return FirPropertySetImpl(session, psi, value, operation).apply {
